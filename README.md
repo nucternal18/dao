@@ -54,10 +54,10 @@ To set up the project locally, follow these steps:
     npx hardhat test
     ```
 
-5. Deploy the contracts to the desired network:
+5. Deploy the contracts to the desired network (The below code allows you to deploy a local hardhat network (Similar to Ganache).):
 
     ```solidity
-    npx hardhat run scripts/deploy.js --network <network_name>
+    npx hardhat ignition deploy ignition/modules/DAORegistration.ts --network localhost 
     ```
 
 Replace <repository_url> with the URL of the repository and <project_directory> with the directory where you cloned the repository. Similarly, <network_name> should be replaced with the name of the Ethereum network you want to deploy to.
