@@ -1,56 +1,75 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+import './governance_contract/Governance.sol';
+import './NFTShares.sol';
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-import "./NFTShares.sol";
+
+
+
+// Interface for compliance checks
+interface ICompliance {
+    function isCompliant() external view returns (bool);
+}
+
+// Interface for dispute resolution
+interface IDisputeResolution {
+    function resolveDispute() external;
+}
 
 contract DAORegistration {
-     NFTShares public nftContract;
+    Governance public governance;
+    MultiTypeNFT public multiTypeNFT;
+    ICompliance public compliance;
+    IDisputeResolution public disputeResolution;
 
-     struct Proposal {
-        // Name of the proposal
-        string name;
-        // Who made the proposal
-        address daoAddress;
-        string symbol;
-        string purpose;
-        address evricaAddress;
-        string jurisdiction;
-        string asset;
-        uint256 duration;
-        uint256 amendmentThreshold;
+    constructor(address _governance, address _compliance, address _disputeResolution) {
+        multiTypeNFT = MultiTypeNFT(msg.sender);
+        governance = Governance(_governance);
+        compliance = ICompliance(_compliance);
+        disputeResolution = IDisputeResolution(_disputeResolution);
     }
 
-    Proposal[] public daoProposal;
-
-    mapping(uint256 => address) public daoRegistrations;
-
-     modifier onlyDAOOwner() {
-        require(msg.sender == daoOwner, "Only DAO owner can call this function");
-        _;
+    // NFT Issuance
+    function mintNFT(
+        address to,
+        uint256 tokenId,
+        MultiTypeNFT.TokenType tokenType,
+        uint256 percentageOwnership,
+        uint256 value,
+        bool hasVotingRights
+    ) external {
+        multiTypeNFT.mint(to, tokenId, tokenType, percentageOwnership, value, hasVotingRights);
     }
 
-    modifier onlyNFTOwner(uint256 tokenId) {
-        require(ownerOf(tokenId) == msg.sender, "Only NFT owner can call this function");
-        _;
+    function getNFTType(uint256 tokenId) external view returns (MultiTypeNFT.TokenType) {
+        return multiTypeNFT.getTokenType(tokenId);
     }
 
-    modifier onlyBeforeTermination() {
-        require(block.timestamp < terminationTime, "Contract is terminated");
-        _;
+    // GOVERNANCE
+    // TODO: implememt the function to 'castVotes' that allows NFT holders to vote on governance decisions.
+    // Ensure only NFT owners can vote, and votes are weighted by the type of NFT owned.
+    function createProposal() external returns (uint256) {
+        require(compliance.isCompliant(), "Not compliant");
+        return governance.createProposal();
     }
 
-     constructor(Proposal memory _daoProposal, address _nftContractAddress) {
-        nftContract = NFTShares(_nftContractAddress);
-        daoProposal.push(_daoProposal);
+    function vote(uint256 proposalId, bool decision) external {
+        require(compliance.isCompliant(), "Not compliant");
+        governance.vote(proposalId, decision);
     }
 
-    function voteForAmendment() external onlyNFTOwner(uint256 tokenId) {
-        require(nftOwners[msg.sender] == NFTType.TypeA, "Only Type A NFT owners can vote for amendments");
-        // Implement voting logic here
+    function executeProposal(uint256 proposalId) external {
+        require(compliance.isCompliant(), "Not compliant");
+        governance.executeProposal(proposalId);
     }
 
-    // Other functions for governance, compliance, and dispute resolution can be implemented here
+    // TODO: implement the function to 'resolveDispute' that allows NFT holders to resolve disputes.
+    // TODO: implement modifier to check to check compliance with the jurisdictional laws
+
 }

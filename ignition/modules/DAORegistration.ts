@@ -1,7 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-export default buildModule("DAORegistration", (m) => {
-    const dao = m.contract("DAORegistration", []);
+export default buildModule("DAORModule", (m) => {
+    const daoContract = m.contract("DAORegistration", []);
     
-    return { dao };
+    return { daoContract };
 });

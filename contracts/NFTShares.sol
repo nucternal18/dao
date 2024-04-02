@@ -1,30 +1,53 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+/**
+ * @title MultiTypeNFT
+ * @dev Extends ERC721 Non-Fungible Token Standard basic implementation
+ * with support for multiple token types.
+ * customize the token metadata to reflect the ownership stakes and rights.
+ *  
+ * */
 
-contract NFTShares is ERC721 {
-    enum NFTType { TypeA, TypeB, TypeC }
-
-    struct NFTMetadata {
-        uint256 percentage;
+contract MultiTypeNFT is ERC721Enumerable, Ownable {
+    struct TokenInfo {
+        uint256 percentageOwnership;
         uint256 value;
         bool hasVotingRights;
     }
 
-    mapping(uint256 => NFTMetadata) public nftMetadata;
+    enum TokenType {TypeA, TypeB, TypeC}
 
-    constructor(
-        string memory _name,
-        string memory _symbol
-    ) ERC721(_name, _symbol) {}
+    mapping(uint256 => TokenInfo) public tokenInfo;
+    mapping(uint256 => TokenType) public tokenTypes;
 
-    function issueNFT(address recipient, uint256 tokenId, NFTType nftType, uint256 percentage, uint256 value, bool hasVotingRights) external {
-        require(nftType == NFTType.TypeA || nftType == NFTType.TypeB || nftType == NFTType.TypeC, "Invalid NFT type");
-        _mint(recipient, tokenId);
-        nftMetadata[tokenId] = NFTMetadata(percentage, value, hasVotingRights);
+    constructor(address initialOwner) Ownable(initialOwner) ERC721("MultiTypeNFT", "MTNFT") {}
+
+    function mint(
+        address to,
+        uint256 tokenId,
+        TokenType tokenType,
+        uint256 percentageOwnership,
+        uint256 value,
+        bool hasVotingRights
+    ) external onlyOwner {
+        require(tokenType == TokenType.TypeA || tokenType == TokenType.TypeB || tokenType == TokenType.TypeC, "Invalid token type");
+        _safeMint(to, tokenId);
+        tokenInfo[tokenId] = TokenInfo(percentageOwnership, value, hasVotingRights);
+        tokenTypes[tokenId] = tokenType;
+    }
+
+    function getTokenType(uint256 tokenId) external view returns (TokenType) {
+        return tokenTypes[tokenId];
+    }
+
+    function _isTokenOwner(address owner, uint256 tokenId) internal view returns (bool) {
+        return ownerOf(tokenId) == owner;
     }
 }
