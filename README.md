@@ -54,7 +54,7 @@ To set up the project locally, follow these steps:
     npx hardhat test
     ```
 
-5. Update network details as shown in the config file and .env.example:
+5. Update network details as shown in the config file and .env.example (If you intend to deploy contract to a test network. i.e. Polygon Mumbai):
 
    ```solidity
        networks: {
