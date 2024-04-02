@@ -54,7 +54,18 @@ To set up the project locally, follow these steps:
     npx hardhat test
     ```
 
-5. Deploy the contracts to the desired network (The below code allows you to deploy a local hardhat network (Similar to Ganache).):
+5. Update network details as shown in the config file and .env.example:
+
+   ```solidity
+       networks: {
+        polygon: {
+          url: process.env.PROVIDER_URL,
+          accounts: [`0x${process.env.PRIVATE_KEY}`],
+        },
+      },
+    ```
+
+6. Deploy the contracts to the desired network (The below code allows you to deploy a local hardhat network (Similar to Ganache).):
 
     ```solidity
     npx hardhat ignition deploy ignition/modules/DAORegistration.ts --network localhost 
